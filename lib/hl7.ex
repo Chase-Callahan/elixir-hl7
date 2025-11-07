@@ -591,6 +591,32 @@ defmodule HL7 do
     HL7.get(hl7, path) |> empty_value?()
   end
 
+  @doc """
+  Same as `empty?/2` excpet this will check the value that is passed in, to see if it is empty.
+
+  Useful when you have already retrieved a value with `get/2` and wish to check if it is empty
+  or not.
+
+  ## Examples
+
+      iex> import HL7
+      iex> hl7 = HL7.Examples.wikipedia_sample_hl7() |> new!()
+      iex> pid_999 = get(hl7, ~p"PID-999")
+      iex> empty?(pid_999)
+      true
+
+      iex> import HL7
+      iex> hl7 = HL7.Examples.wikipedia_sample_hl7() |> new!()
+      iex> pid_3 = get(hl7, ~p"PID-3")
+      iex> empty?(pid_3)
+      false
+  """
+
+  @spec empty?(parsed_hl7_segments()) :: boolean()
+  def empty?(value) do
+    empty_value?(value)
+  end
+
   # internals
   defp empty_value?(value) when value in ["", nil], do: true
 
