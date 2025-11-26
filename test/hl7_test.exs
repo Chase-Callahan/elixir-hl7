@@ -734,6 +734,16 @@ defmodule HL7Test do
       converted = @wiki_text |> new!() |> to_string()
       assert converted == @wiki_text
     end
+
+    test "does not leave trailing pipes if no field data is present" do
+      output_string =
+        "MSH|^~\\&|MegaReg|XYZHospC|SuperOE|XYZImgCtr|20060529090131-0500||ADT^A01^ADT_A01|01052901|P|2.5|||||||||||||||||||||||||||||||||||||"
+        |> new!()
+        |> to_string()
+
+      assert output_string ==
+               "MSH|^~\\&|MegaReg|XYZHospC|SuperOE|XYZImgCtr|20060529090131-0500||ADT^A01^ADT_A01|01052901|P|2.5\r"
+    end
   end
 
   describe "HL7.label/2" do

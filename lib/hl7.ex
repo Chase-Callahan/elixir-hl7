@@ -1038,6 +1038,7 @@ end
 defimpl String.Chars, for: HL7 do
   @spec to_string(HL7.t()) :: String.t()
   def to_string(%HL7{} = hl7) do
+    dbg(Map.from_struct(hl7))
     hl7 |> HL7.to_list() |> HL7.Message.raw() |> Map.get(:raw)
   end
 end
