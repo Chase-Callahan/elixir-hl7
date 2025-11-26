@@ -744,6 +744,26 @@ defmodule HL7Test do
       assert output_string ==
                "MSH|^~\\&|MegaReg|XYZHospC|SuperOE|XYZImgCtr|20060529090131-0500||ADT^A01^ADT_A01|01052901|P|2.5\r"
     end
+
+    test "does not leave trailing components" do
+      output_string =
+        @wiki_text
+        |> new!()
+        |> put(~p"MSH-3.9", "")
+        |> to_string()
+
+      assert <<"MSH|^~\\&|MegaReg|", _rest::binary>> = output_string
+    end
+
+    test "retains empty repetitions" do
+      output_string =
+        @wiki_text
+        |> String.replace("PID|||", "PID||~|")
+        |> new!()
+        |> to_string()
+
+      assert String.contains(output_string, "PID||~|")
+    end
   end
 
   describe "HL7.label/2" do

@@ -1024,6 +1024,26 @@ defmodule HL7 do
         error
     end
   end
+
+  @spec empty?(parsed_hl7(), Path.t()) :: boolean()
+  def empty?(hl7, %HL7.Path{} = path) do
+    HL7.get(hl7, path) |> empty_value?()
+  end
+
+  # internals
+  defp empty_value?(value) when value in ["", nil], do: true
+
+  defp empty_value?([]), do: true
+
+  defp empty_value?([head | tail]) do
+    with true <- empty_value?(head) do
+      empty_value?(tail)
+    end
+  end
+
+  defp empty_value?(%{} = map), do: empty_value?(Map.values(map))
+
+  defp empty_value?(_), do: false
 end
 
 defimpl Inspect, for: HL7 do
@@ -1036,9 +1056,36 @@ defimpl Inspect, for: HL7 do
 end
 
 defimpl String.Chars, for: HL7 do
+  import HL7, only: :sigils
   @spec to_string(HL7.t()) :: String.t()
   def to_string(%HL7{} = hl7) do
-    dbg(Map.from_struct(hl7))
-    hl7 |> HL7.to_list() |> HL7.Message.raw() |> Map.get(:raw)
+    hl7
+    |> HL7.get_segments()
+    |> Enum.map(&trim/1)
+    |> dbg()
+    |> HL7.to_list()
+    |> HL7.Message.raw()
+    |> Map.get(:raw)
+  end
+
+  defp trim(%{} = segment) do
+    Enum.flat_map(segment, fn
+      {key, %{} = map} ->
+        trimmed_map = trim(map)
+
+        if HL7.empty?(trimmed_map, ~p"") do
+          []
+        else
+          [{key, trimmed_map}]
+        end
+
+      {key, val} ->
+        if HL7.empty?(val, ~p"") do
+          []
+        else
+          [{key, val}]
+        end
+    end)
+    |> Map.new()
   end
 end
